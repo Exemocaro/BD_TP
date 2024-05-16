@@ -1,0 +1,22 @@
+coleções:
+    ->pacientes
+        -hospital.patient
+        -hospital.insurance
+        -hospital.emergency_contact
+        -hospital.medical_history
+    ->episodios
+        -hospital.bill
+        -hospital.prescription
+            -hospital.medicine
+    ->staff
+        -hospital.department
+        -hospital.doctors
+        -hospital.nurse
+        -hospital.technician
+    -> appointments
+        - hospital.appointments
+    -> hospitalizations
+        - hospital.hospitalizations
+            - hospital.room
+    -> screenings
+        - hospital.screening
