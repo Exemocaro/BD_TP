@@ -72,12 +72,94 @@ def load_Episodes(cursor, dbMongo):
         mDB_Episodes.append(newEpisode)
     dbMongo["Episode"].insert_many(mDB_Episodes)
 
+def load_Staff(cursor, dbMongo):
+    mDB_Staff = []
+    staff = cursor.execute("select * from staff").fetchall()
+    for person in staff:
+        newPerson = {}
+        newPerson["_id"] = person[0]
+        newPerson["FNAME"] = person[1]
+        newPerson["LNAME"] = person[2]
+        newPerson["DATE_JOINING"] = person[3]
+        newPerson["DATE_SEPERATION"] = person[4]
+        newPerson["EMAIL"] = person[5]
+        newPerson["ADDRESS"] = person[6]
+        newPerson["SSN"] = person[7]
+        newPerson["IS_ACTIVE_STATUS"] = person[9]
+        department = cursor.execute("select * from department where \"IDDEPARTMENT\" =" + str(person[8])).fetchone()
+        newPerson["DEPARTMENT"] = {}
+        newPerson["DEPARTMENT"]["DEPT_HEAD"] = department[1]
+        newPerson["DEPARTMENT"]["DEPT_NAME"] = department[2]
+        newPerson["DEPARTMENT"]["EMP_COUNT"] = department[3]
+        staff = cursor.execute("select * from nurse where \"STAFF_EMP_ID\" =" + str(person[0])).fetchone()
+        if staff is not None:
+            newPerson["QUALIFICATION"] = "NURSE"
+        else:
+            staff = cursor.execute("select * from doctor where \"EMP_ID\" =" + str(person[0])).fetchone()
+            if staff is not None:
+                newPerson["QUALIFICATION"] = staff[1]
+            else:
+                staff = cursor.execute("select * from technician where \"STAFF_EMP_ID\" =" + str(person[0])).fetchone()
+                if staff is not None:
+                    newPerson["QUALIFICATION"] = "TECHNICIAN"
+                else:
+                    Exception("Staff not found in any table")
+        mDB_Staff.append(newPerson)
+    dbMongo["Staff"].insert_many(mDB_Staff)
+
+def load_Appointments(cursor, dbMongo):
+    mDB_Appointments = []
+    appointments = cursor.execute("select * from appointment").fetchall()
+    for appointment in appointments:
+        newAppointment = {}
+        newAppointment["_id"] = appointment[4]
+        newAppointment["SCHEDULED_ON"] = appointment[0]
+        newAppointment["APPOINTMENT_DATE"] = appointment[1]
+        newAppointment["APPOINTMENT_TIME"] = appointment[2]
+        newAppointment["IDDOCTOR"] = appointment[3]
+        mDB_Appointments.append(newAppointment)
+    dbMongo["Appointment"].insert_many(mDB_Appointments)
+
+def load_Hospitalization(cursor, dbMongo):
+    mDB_Hospitalizations = []
+    hospitalizations = cursor.execute("select * from hospitalization").fetchall()
+    for hospitalization in hospitalizations:
+        newHospitalization = {}
+        newHospitalization["_id"] = hospitalization[3]
+        newHospitalization["ADMISSION_DATE"] = hospitalization[0]
+        newHospitalization["DISCHARGE_DATE"] = hospitalization[1]
+        room = cursor.execute("select * from room where \"IDROOM\" =" + str(hospitalization[2])).fetchone()
+        newHospitalization["ROOM"] = {}
+        newHospitalization["ROOM"]["ROOM_TYPE"] = room[1]
+        newHospitalization["ROOM"]["ROOM_COST"] = room[2]
+        newHospitalization["RESPONSIBLE_STAFF"] = hospitalization[4]
+        mDB_Hospitalizations.append(newHospitalization)
+    dbMongo["Hospitalization"].insert_many(mDB_Hospitalizations)
+
+def load_Lab_Screening(cursor, dbMongo):
+    mDB_Lab_Screenings = []
+    lab_screenings = cursor.execute("select * from lab_screening").fetchall()
+    for lab_screening in lab_screenings:
+        newLab_Screening = {}
+        newLab_Screening["_id"] = lab_screening[0]
+        newLab_Screening["TEST_COST"] = lab_screening[1]
+        newLab_Screening["TEST_DATE"] = lab_screening[2]
+        newLab_Screening["TECHNICIAN"] = lab_screening[3]
+        newLab_Screening["EPISODE"] = lab_screening[4]
+        mDB_Lab_Screenings.append(newLab_Screening)
+    dbMongo["Lab_Screening"].insert_many(mDB_Lab_Screenings)
+
+
 connectionOracle = oracledb.connect(user="sys", password="1R2cl3!!!", dsn="localhost/xe", mode=oracledb.SYSDBA ) 
 connectionMongo = pymongo.MongoClient("mongodb://localhost:27017/")
 dbMongo = connectionMongo["Projeto"]
 with connectionOracle.cursor() as oracleCursor:
     #load_Patients(oracleCursor, dbMongo)
-    load_Episodes(oracleCursor, dbMongo)
+    #load_Episodes(oracleCursor, dbMongo)
+    #load_Staff(oracleCursor, dbMongo)
+    load_Appointments(oracleCursor, dbMongo)
+    load_Hospitalization(oracleCursor, dbMongo)
+    load_Lab_Screening(oracleCursor, dbMongo)
 connectionOracle.close()
 
 
