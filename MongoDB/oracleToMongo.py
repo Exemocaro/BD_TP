@@ -31,7 +31,7 @@ def load_Patients(cursor, dbMongo):
         emergency_contact = cursor.execute("select * from emergency_contact where \"IDPATIENT\" =" + str(patient[0])).fetchall()
         patient_contacts = []   
         for contact in emergency_contact:
-            patient_contacts.append({"CONTACT_NAME": contact[1], "RELATION": contact[3], "PHONE": contact[2]})
+            patient_contacts.append({"CONTACT_NAME": contact[0], "RELATION": contact[2], "PHONE": contact[1]})
         newPatient["EMERGENCY_CONTACT"] = patient_contacts
         mDB_Patients.append(newPatient)
     dbMongo["Patient"].insert_many(mDB_Patients)
@@ -116,7 +116,7 @@ def load_Appointments(cursor, dbMongo):
         newAppointment["SCHEDULED_ON"] = appointment[0]
         newAppointment["APPOINTMENT_DATE"] = appointment[1]
         newAppointment["APPOINTMENT_TIME"] = appointment[2]
-        newAppointment["IDDOCTOR"] = appointment[3]
+        newAppointment["RESPONSIBLE_STAFF"] = appointment[3]
         mDB_Appointments.append(newAppointment)
     dbMongo["Appointment"].insert_many(mDB_Appointments)
 
@@ -144,7 +144,7 @@ def load_Lab_Screening(cursor, dbMongo):
         newLab_Screening["_id"] = lab_screening[0]
         newLab_Screening["TEST_COST"] = lab_screening[1]
         newLab_Screening["TEST_DATE"] = lab_screening[2]
-        newLab_Screening["TECHNICIAN"] = lab_screening[3]
+        newLab_Screening["RESPONSIBLE_STAFF"] = lab_screening[3]
         newLab_Screening["EPISODE"] = lab_screening[4]
         mDB_Lab_Screenings.append(newLab_Screening)
     dbMongo["Lab_Screening"].insert_many(mDB_Lab_Screenings)
@@ -154,12 +154,12 @@ connectionOracle = oracledb.connect(user="sys", password="1R2cl3!!!", dsn="local
 connectionMongo = pymongo.MongoClient("mongodb://localhost:27017/")
 dbMongo = connectionMongo["Projeto"]
 with connectionOracle.cursor() as oracleCursor:
-    #load_Patients(oracleCursor, dbMongo)
+    load_Patients(oracleCursor, dbMongo)
     #load_Episodes(oracleCursor, dbMongo)
     #load_Staff(oracleCursor, dbMongo)
-    load_Appointments(oracleCursor, dbMongo)
-    load_Hospitalization(oracleCursor, dbMongo)
-    load_Lab_Screening(oracleCursor, dbMongo)
+    #load_Appointments(oracleCursor, dbMongo)
+    #load_Hospitalization(oracleCursor, dbMongo)
+    #load_Lab_Screening(oracleCursor, dbMongo)
 connectionOracle.close()
 
 
