@@ -51,23 +51,62 @@ RETURN p, e
 
 > Tempo de execução: 67 ms
 
-7. Registar um novo episódio   *(adicionar consulta/hospitalização/análise?)
+7. Registar um novo episódio
 
 Onde está o id_patient, substituir por um número inteiro. \
-Onde está o new_episode_id, substituir por um número inteiro de modo a criar um novo episódio.
+Onde está o new_episode_id, substituir por um número inteiro de modo a criar um novo episódio. \
+Onde está o admission_date, discharge_date, room_type, room_cost e nurse_id, substituir por strings e um float de modo a inserir os detalhes de uma hospitalização.
 
 > CREATE (e:Episode {IDEPISODE: new_episode_id})
 WITH e
 MATCH (p:Patient {IDPATIENT: id_patient})
 CREATE (e)-[:WAS_FREQUENTED_BY]->(p)
-RETURN p, e
+WITH e, p
+CREATE (h:Hospitalization {ADMISSION_DATE: admission_date, DISCHARGE_DATE: discharge_date, ROOM_ROOM_TYPE: room_type, ROOM_ROOM_COST: room_cost})
+CREATE (h)-[:IS_IN_EPISODE]->(e)
+WITH e, p, h
+MATCH (n:Staff {EMP_ID: nurse_id})
+CREATE (h)-[:PERFORMED_BY]->(n)
+RETURN p, e, h
 
-> Tempo de execução: 220 ms
+> Tempo de execução: 498 ms
 
-8. Registar um novo paciente   *(adicionar contacto de emergência?)
+Onde está o scheduled_on, appointment_date, appointment_time e doctor_id, substituir por strings de modo a inserir os detalhes de uma consulta.
+
+> CREATE (e:Episode {IDEPISODE: new_episode_id})
+WITH e
+MATCH (p:Patient {IDPATIENT: id_patient})
+CREATE (e)-[:WAS_FREQUENTED_BY]->(p)
+WITH e, p
+CREATE (a:Appointment {SCHEDULED_ON: scheduled_on, APPOINTMENT_DATE: appointment_date, APPOINTMENT_TIME: appointment_time})
+CREATE (a)-[:IS_IN_EPISODE]->(e)
+WITH e, p, a
+MATCH (n:Staff {EMP_ID: doctor_id})
+CREATE (a)-[:PERFORMED_BY]->(n)
+RETURN p, e, a
+
+> Tempo de execução: 172 ms
+
+Onde está o lab_id, test_cost, test_date e technician_id, substituir por inteiros, um float e uma string de modo a inserir os detalhes de uma análise.
+
+> PROFILE 
+CREATE (e:Episode {IDEPISODE: new_episode_id})
+WITH e
+MATCH (p:Patient {IDPATIENT: id_patient})
+CREATE (e)-[:WAS_FREQUENTED_BY]->(p)
+WITH e, p
+CREATE (s:Screening {LAB_ID: lab_id, TEST_COST: test_cost, TEST_DATE: test_date})
+CREATE (s)-[:IS_IN_EPISODE]->(e)
+WITH e, p, s
+MATCH (n:Staff {EMP_ID: technician_id})
+CREATE (s)-[:PERFORMED_BY]->(n)
+RETURN p, e, s
+
+> Tempo de execução: 142 ms
+
+8. Registar um novo paciente
 
 Onde está o id_patient, patient_firstname, patient_lastname, blood_type, phone, email, gender, policy_number e birthday, substituir por strings ou inteiros de modo a introduzir os campos do novo paciente.
-
 
 > CREATE (p:Patient {
     IDPATIENT: id_patient,
@@ -88,7 +127,7 @@ RETURN p
 
 Onde está o id_nurse, substituir por um número inteiro de forma a obter os quartos de hospital onde um enfermeiro operou.
 
-> MATCH (n:Staff {QUALIFICATION: 'NURSE', EMP_ID: $nurseId})-[:PERFORMED_BY]-(h:Hospitalization)-[:IS_IN_EPISODE]-(e:Episode)
+> MATCH (n:Staff {QUALIFICATION: 'NURSE', EMP_ID: id_nurse})-[:PERFORMED_BY]-(h:Hospitalization)-[:IS_IN_EPISODE]-(e:Episode)
 RETURN DISTINCT h.ROOM_ROOM_TYPE, h.ROOM_ROOM_COST
 
 > Tempo de execução: 97 ms
@@ -104,4 +143,4 @@ RETURN p, e
 
 > Tempo de execução: 83 ms
 
-Os tempos de execução das queries foram obtidos ao adicionar 'PROFILE' antes da query Cypher em si, permitindo visualizar o número de acessos à base de dados e tempo de execução.
+Os tempos de execução das queries foram obtidos ao adicionar a palavra 'PROFILE' antes da query Cypher em si, permitindo visualizar o número de acessos à base de dados e tempo de execução.
