@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import datetime
 
 
-# pedir o historico de um paciente
+# 1 pedir o historico de um paciente
 def get_medical_history_by_id(patient_id, db):
     collection = db['Patient']  #Replace with your actual collection name
 
@@ -11,7 +11,7 @@ def get_medical_history_by_id(patient_id, db):
 
     return result
 
-
+# 2 ver todas as consultas/hospitalizações/análises de um funcionário
 def get_staff_related_records(staff_id, db):
 
     collection = db['Department']  #Replace with your actual collection name
@@ -66,7 +66,7 @@ def get_staff_related_records(staff_id, db):
 
 
 
-#-> verificar todos os médicos de uma certa especialidade
+# 3 verificar todos os médicos de uma certa especialidade
 def get_doctors_by_specialty(specialty, db):
     collection = db['Department']  #Replace with your actual collection name
 
@@ -75,7 +75,7 @@ def get_doctors_by_specialty(specialty, db):
 
     return result
 
-#-> ver todas as medicines que o hospital já prescreveu para um paciente
+# 4 ver todas as medicines que o hospital já prescreveu para um paciente
 def get_all_prescribed_medicines(patient_id, db):
     collection = db['Episode']  #Replace with your actual collection name
 
@@ -89,7 +89,7 @@ def get_all_prescribed_medicines(patient_id, db):
 
     return ret
 
-#-> consultar as contas de um paciente
+# 5 consultar as contas de um paciente
 def get_patient_bills(patient_id, db):
     collection = db['Episode']  #Replace with your actual collection name
 
@@ -103,7 +103,10 @@ def get_patient_bills(patient_id, db):
 
     return ret
 
-# registar um novo episodio (funçao)
+# 6 Procurar o conjunto de episódios de um paciente
+# TODO
+
+# 7 registar um novo episodio (funçao)
 def register_new_episode(patient_id, prescriptions, bills, db):
     collection = db['Episode']  # Replace with your actual collection name
 
@@ -112,7 +115,7 @@ def register_new_episode(patient_id, prescriptions, bills, db):
 
     return result
 
-# registar um novo paciente
+# 8 registar um novo paciente
 def register_new_patient(patient_name, blood_type, phone, email, gender, birthday, insurance_plan, emergency_contacts, db):
     collection = db['Patient']  # Replace with your actual collection name
     newPatient = {}
@@ -133,8 +136,11 @@ def register_new_patient(patient_name, blood_type, phone, email, gender, birthda
 
     return result
 
+# 9 verificar todos os quartos de hospital onde um(a) enfermeira/o já operou
+# TODO
 
-#-> update do contacto de emergencia do paciente
+
+# 10 update do contacto de emergencia do paciente
 def update_emergency_contact(patient_id, new_contact_list, db):
     collection = db['Patient']  # Replace with your actual collection name
 
