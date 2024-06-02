@@ -28,7 +28,7 @@ def get_staff_related_records(staff_id, db):
                     "$filter" : {
                         "input": "$STAFF",
                         "as": "staff",
-                        "cond": {  "$eq" : [ "$$staff.STAFF_ID", 14]}
+                        "cond": {  "$eq" : [ "$$staff.STAFF_ID", staff_id]}
                     }
                 }
             }
