@@ -144,6 +144,7 @@ def load_Hospitalization(cursor, dbMongo):
         newHospitalization["DISCHARGE_DATE"] = hospitalization[1]
         room = cursor.execute("select * from room where \"IDROOM\" =" + str(hospitalization[2])).fetchone()
         newHospitalization["ROOM"] = {}
+        newHospitalization["ROOM"]["ROOM_NUMBER"] = room[0]
         newHospitalization["ROOM"]["ROOM_TYPE"] = room[1]
         newHospitalization["ROOM"]["ROOM_COST"] = room[2]
         newHospitalization["RESPONSIBLE_STAFF"] = hospitalization[4]
@@ -169,12 +170,12 @@ connectionMongo = pymongo.MongoClient("mongodb://localhost:27017/")
 dbMongo = connectionMongo["Projeto"]
 with connectionOracle.cursor() as oracleCursor:
     #load_Insurance(oracleCursor, dbMongo)
-    load_Deparments(oracleCursor, dbMongo)
+    #load_Deparments(oracleCursor, dbMongo)
 #    load_Patients(oracleCursor, dbMongo)
     #load_Episodes(oracleCursor, dbMongo)
     #load_Staff(oracleCursor, dbMongo)
     #load_Appointments(oracleCursor, dbMongo)
-    #load_Hospitalization(oracleCursor, dbMongo)
+    load_Hospitalization(oracleCursor, dbMongo)
     #load_Lab_Screening(oracleCursor, dbMongo)
 connectionOracle.close()
 

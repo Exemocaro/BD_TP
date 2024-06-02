@@ -104,11 +104,16 @@ def get_patient_bills(patient_id, db):
     return ret
 
 # 6 Procurar o conjunto de episódios de um paciente
-# TODO
+def get_patients_files(patient_id, db):
+    collection = db['Episode'] 
+
+    result = collection.find({'PATIENT_ID': patient_id})
+
+    return list(result)
 
 # 7 registar um novo episodio (funçao)
 def register_new_episode(patient_id, prescriptions, bills, db):
-    collection = db['Episode']  # Replace with your actual collection name
+    collection = db['Episode']  
 
     # Perform the query
     result = collection.insert_one({'PATIENT_ID': patient_id, 'PRESCIPTIONS': prescriptions, 'BILLS': bills})
@@ -117,7 +122,7 @@ def register_new_episode(patient_id, prescriptions, bills, db):
 
 # 8 registar um novo paciente
 def register_new_patient(patient_name, blood_type, phone, email, gender, birthday, insurance_plan, emergency_contacts, db):
-    collection = db['Patient']  # Replace with your actual collection name
+    collection = db['Patient']  
     newPatient = {}
     nameSplit = patient_name.split(' ')
     newPatient["PATIENT_FNAME"] = nameSplit[0]
@@ -137,12 +142,17 @@ def register_new_patient(patient_name, blood_type, phone, email, gender, birthda
     return result
 
 # 9 verificar todos os quartos de hospital onde um(a) enfermeira/o já operou
-# TODO
+def get_nurse_rooms(nurse_id, db):
+    collection = db['Hospitalization']    
 
+    # Perform the query
+    result = list(collection.find({'RESPONSIBLE_STAFF': nurse_id}, {'_id': 0, 'ROOM.ROOM_NUMBER': 1}))
+
+    return result
 
 # 10 update do contacto de emergencia do paciente
 def update_emergency_contact(patient_id, new_contact_list, db):
-    collection = db['Patient']  # Replace with your actual collection name
+    collection = db['Patient']  
 
     collection.update_one({'_id': patient_id}, {"$set": {'EMERGENCY_CONTACT': new_contact_list}})
 
@@ -153,10 +163,12 @@ def update_emergency_contact(patient_id, new_contact_list, db):
 # Replace the URI string with your MongoDB deployment's connection string.
 client = MongoClient("mongodb://localhost:27017/")
 db = client['Projeto'] 
-print(get_staff_related_records(14, db))
+#print(get_staff_related_records(14, db))
 #print(get_medical_history_by_id(1, db))
 #print(get_doctors_by_specialty('Cardiology', db))
 #print(get_all_prescribed_medicines(1, db))
 #print(get_patient_bills(3, db))
-print(register_new_patient("John Doe", "O-", "111-222-3333", "doe@mail.com", "M", datetime.datetime(1990, 1, 1), "POL004", [], db))
+#print(register_new_patient("John Doe", "O-", "111-222-3333", "doe@mail.com", "M", datetime.datetime(1990, 1, 1), "POL004", [], db))
 #update_emergency_contact(1, [{'CONTACT_NAME' : "John Doe", "RELATION": "Father", "PHONE": "111-222-3333"}], db)
+#print(get_patients_files(1, db))
+print(get_nurse_rooms(4, db))
