@@ -1,6 +1,22 @@
 import oracledb 
 import pymongo
 
+def load_Insurance(cursor, dbMongo):
+    mDB_Insurance = []
+    insurance = cursor.execute("select * from insurance").fetchall()
+    for ins in insurance:
+        newInsurance = {}
+        newInsurance["_id"] = ins[0]
+        newInsurance["PROVIDER"] = ins[1]
+        newInsurance["INSURANCE_PLAN"] = ins[2]
+        newInsurance["CO_PAY"] = ins[3]
+        newInsurance["COVERAGE"] = ins[4]
+        newInsurance["MATERNITY"] = ins[5]
+        newInsurance["DENTAL"] = ins[6]
+        newInsurance["OPTICAL"] = ins[7]
+        mDB_Insurance.append(newInsurance)
+    print(mDB_Insurance)
+    dbMongo["Insurance"].insert_many(mDB_Insurance)
 
 def load_Patients(cursor, dbMongo):
     mDB_Patients = []
@@ -14,15 +30,8 @@ def load_Patients(cursor, dbMongo):
         newPatient["PHONE"] = patient[4]
         newPatient["EMAIL"] = patient[5]
         newPatient["GENDER"] = patient[6]
+        newPatient["POLICY"] = patient[7]
         newPatient["BIRTHDAY"] = patient[8]
-        patient_policy = cursor.execute("select * from insurance where \"POLICY_NUMBER\" = \'" + str(patient[7]) + "\'").fetchone() 
-        newPatient["PROVIDER"] = patient_policy[1]
-        newPatient["INSURANCE_PLAN"] = patient_policy[2]
-        newPatient["CO_PAY"] = patient_policy[3]
-        newPatient["COVERAGE"] = patient_policy[4]
-        newPatient["MATERNITY"] = patient_policy[5]
-        newPatient["DENTAL"] = patient_policy[6]
-        newPatient["OPTICAL"] = patient_policy[7]
         medical_history = cursor.execute("select * from medical_history where \"IDPATIENT\" =" + str(patient[0])).fetchall()
         histories = []
         for history in medical_history:
@@ -72,40 +81,45 @@ def load_Episodes(cursor, dbMongo):
         mDB_Episodes.append(newEpisode)
     dbMongo["Episode"].insert_many(mDB_Episodes)
 
-def load_Staff(cursor, dbMongo):
-    mDB_Staff = []
-    staff = cursor.execute("select * from staff").fetchall()
-    for person in staff:
-        newPerson = {}
-        newPerson["_id"] = person[0]
-        newPerson["FNAME"] = person[1]
-        newPerson["LNAME"] = person[2]
-        newPerson["DATE_JOINING"] = person[3]
-        newPerson["DATE_SEPERATION"] = person[4]
-        newPerson["EMAIL"] = person[5]
-        newPerson["ADDRESS"] = person[6]
-        newPerson["SSN"] = person[7]
-        newPerson["IS_ACTIVE_STATUS"] = person[9]
-        department = cursor.execute("select * from department where \"IDDEPARTMENT\" =" + str(person[8])).fetchone()
-        newPerson["DEPARTMENT"] = {}
-        newPerson["DEPARTMENT"]["DEPT_HEAD"] = department[1]
-        newPerson["DEPARTMENT"]["DEPT_NAME"] = department[2]
-        newPerson["DEPARTMENT"]["EMP_COUNT"] = department[3]
-        staff = cursor.execute("select * from nurse where \"STAFF_EMP_ID\" =" + str(person[0])).fetchone()
-        if staff is not None:
-            newPerson["QUALIFICATION"] = "NURSE"
-        else:
-            staff = cursor.execute("select * from doctor where \"EMP_ID\" =" + str(person[0])).fetchone()
+def load_Deparments(cursor, dbMongo):
+    mDB_Deparments = []
+    department = cursor.execute("select * from department").fetchall()
+    for depart in department:
+        newDepartment = {}
+        newDepartment["_id"] = depart[0]
+        newDepartment["DEPT_HEAD"] = depart[1]
+        newDepartment["DEPT_NAME"] = depart[2]
+        newDepartment["EMP_COUNT"] = depart[3]
+        staff = cursor.execute("select * from staff where iddepartment = " + str(depart[0])).fetchall()
+        staffList = []
+        for person in staff:
+            newPerson = {}
+            newPerson["STAFF_ID"] = person[0]
+            newPerson["FNAME"] = person[1]
+            newPerson["LNAME"] = person[2]
+            newPerson["DATE_JOINING"] = person[3]
+            newPerson["DATE_SEPERATION"] = person[4]
+            newPerson["EMAIL"] = person[5]
+            newPerson["ADDRESS"] = person[6]
+            newPerson["SSN"] = person[7]
+            newPerson["IS_ACTIVE_STATUS"] = person[9]
+            staff = cursor.execute("select * from nurse where \"STAFF_EMP_ID\" =" + str(person[0])).fetchone()
             if staff is not None:
-                newPerson["QUALIFICATION"] = staff[1]
+                newPerson["QUALIFICATION"] = "NURSE"
             else:
-                staff = cursor.execute("select * from technician where \"STAFF_EMP_ID\" =" + str(person[0])).fetchone()
+                staff = cursor.execute("select * from doctor where \"EMP_ID\" =" + str(person[0])).fetchone()
                 if staff is not None:
-                    newPerson["QUALIFICATION"] = "TECHNICIAN"
+                    newPerson["QUALIFICATION"] = staff[1]
                 else:
-                    Exception("Staff not found in any table")
-        mDB_Staff.append(newPerson)
-    dbMongo["Staff"].insert_many(mDB_Staff)
+                    staff = cursor.execute("select * from technician where \"STAFF_EMP_ID\" =" + str(person[0])).fetchone()
+                    if staff is not None:
+                        newPerson["QUALIFICATION"] = "TECHNICIAN"
+                    else:
+                        Exception("Staff not found in any table")
+            staffList.append(newPerson)
+        newDepartment["STAFF"] = staffList
+        mDB_Deparments.append(newDepartment)
+    dbMongo["Department"].insert_many(mDB_Deparments)
 
 def load_Appointments(cursor, dbMongo):
     mDB_Appointments = []
@@ -154,7 +168,9 @@ connectionOracle = oracledb.connect(user="sys", password="1R2cl3!!!", dsn="local
 connectionMongo = pymongo.MongoClient("mongodb://localhost:27017/")
 dbMongo = connectionMongo["Projeto"]
 with connectionOracle.cursor() as oracleCursor:
-    load_Patients(oracleCursor, dbMongo)
+    #load_Insurance(oracleCursor, dbMongo)
+    load_Deparments(oracleCursor, dbMongo)
+#    load_Patients(oracleCursor, dbMongo)
     #load_Episodes(oracleCursor, dbMongo)
     #load_Staff(oracleCursor, dbMongo)
     #load_Appointments(oracleCursor, dbMongo)
