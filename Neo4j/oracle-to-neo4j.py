@@ -156,6 +156,19 @@ def load_episodes(cursor):
             
         new_episode["PRESCRIPTIONS"] = json.dumps(prescriptions)
         
+        bills_sql = cursor.execute("SELECT * FROM bill WHERE idepisode = " + str(episode[0])).fetchone()
+        if bills_sql:
+            new_bill = {}
+            new_bill["IDBILL"] = bills_sql[0]
+            new_bill["ROOM_COST"] = bills_sql[1]
+            new_bill["TEST_COST"] = bills_sql[2]
+            new_bill["OTHER_CHARGES"] = bills_sql[3]
+            new_bill["TOTAL_COST"] = bills_sql[4]
+            new_bill["REGISTERED_AT"] = bills_sql[6].strftime("%Y-%m-%d %H:%M:%S")
+            new_bill["PAYMENT_STATUS"] = bills_sql[7]
+            
+            new_episode["BILL"] = json.dumps(new_bill)
+        
         appointments_sql = cursor.execute("SELECT * FROM appointment WHERE idepisode = " + str(episode[0])).fetchall()
         for appointment in appointments_sql:
             new_episode["SCHEDULED_ON"] = appointment[0].strftime("%Y-%m-%d %H:%M:%S")
