@@ -2,8 +2,7 @@
 
 Onde está o id_patient, substituir por um número inteiro de forma a obter o histórico desse mesmo paciente.
 
-> MATCH (p:Patient {IDPATIENT: id_patient})-[:BELONGS_TO]-(h:History)
-RETURN p, h
+> MATCH (p:Patient) WHERE p.IDPATIENT = $id_patient RETURN p.MEDICAL_HISTORY;
 
 > Tempo de execução: 16 ms
 
@@ -11,8 +10,7 @@ RETURN p, h
 
 Onde está o employee_id, substituir por um número inteiro de forma a obter os episódios do funcionário.
 
-> MATCH (s:Staff {EMP_ID: employee_id})-[:PERFORMED_BY]-(event)
-RETURN s, event
+> MATCH (s:Staff {EMP_ID: $employee_id})<-[PERFORMED_BY]-(e:Episode) RETURN s, e;
 
 > Tempo de execução: 55 ms
 
@@ -20,16 +18,13 @@ RETURN s, event
 
 Onde está o id_department, substituir por um número inteiro de forma a obter os médicos que trabalham nesse departamento.
 
-> MATCH (d:Department {IDDEPARTMENT: id_department})<-[:WORKS_IN]-(s:Staff)
-RETURN d, s
+> MATCH (d:Department {IDDEPARTMENT: 1})<-[:BELONGS_TO]-(s:Staff) RETURN d, s;
 
 > Tempo de execução: 67 ms
 
 4. Ver todos os medicamentos que o hospital já prescreveu
 
-> MATCH (p:Prescription)
-RETURN p.MEDICINE_M_NAME AS MedicineName, COUNT(p) AS TimesPrescribed
-ORDER BY TimesPrescribed DESC
+> MATCH (p:Prescription) RETURN p.MEDICINE_M_NAME AS MedicineName, COUNT(p) AS TimesPrescribed ORDER BY TimesPrescribed DESC;
 
 > Tempo de execução: 51 ms
 

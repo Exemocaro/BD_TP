@@ -137,6 +137,25 @@ def load_episodes(cursor):
         new_episode = {}
         new_episode["IDEPISODE"] = episode[0]
         
+        prescriptions_sql = cursor.execute("SELECT * FROM prescription WHERE idepisode = " + str(episode[0])).fetchall()
+        prescriptions = []
+        for prescription in prescriptions_sql:
+            new_prescription = {}
+            new_prescription["IDPRESCRIPTION"] = prescription[0]
+            new_prescription["PRESCRIPTION_DATE"] = prescription[1].strftime("%Y-%m-%d")
+            new_prescription["DOSAGE"] = prescription[2]
+            
+            medicines_sql = cursor.execute("SELECT * FROM medicine WHERE idmedicine = " + str(prescription[3])).fetchone()
+            new_prescription["IDMEDICINE"] = medicines_sql[0]
+            new_prescription["MEDICINE_NAME"] = medicines_sql[1]
+            new_prescription["MEDICINE_QUANTITY"] = medicines_sql[2]
+            new_prescription["MEDICINE_COST"] = medicines_sql[3]
+            
+            prescriptions.append(new_prescription)
+            # print(new_prescription)
+            
+        new_episode["PRESCRIPTIONS"] = json.dumps(prescriptions)
+        
         appointments_sql = cursor.execute("SELECT * FROM appointment WHERE idepisode = " + str(episode[0])).fetchall()
         for appointment in appointments_sql:
             new_episode["SCHEDULED_ON"] = appointment[0].strftime("%Y-%m-%d %H:%M:%S")
