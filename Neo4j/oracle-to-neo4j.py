@@ -115,6 +115,16 @@ def load_staff(cursor):
         new_staff["SSN"] = staff[7]
         new_staff["IDDEPARTMENT"] = staff[8]
         
+        nurse_sql = cursor.execute("SELECT * FROM nurse WHERE staff_emp_id = " + str(staff[0])).fetchall()
+        if nurse_sql:
+            new_staff["ROLE"] = "Nurse"
+        doctor_sql = cursor.execute("SELECT * FROM doctor WHERE emp_id = " + str(staff[0])).fetchall()
+        if doctor_sql:
+            new_staff["QUALIFICATIONS"] = doctor_sql[0][1]
+            new_staff["ROLE"] = "Doctor"
+        technician_sql = cursor.execute("SELECT * FROM technician WHERE staff_emp_id = " + str(staff[0])).fetchall()
+        if technician_sql:
+            new_staff["ROLE"] = "Technician"
         staff_node = create_node("Staff", new_staff)
         
         department_node = graph.nodes.match("Department", IDDEPARTMENT=staff[8]).first()
