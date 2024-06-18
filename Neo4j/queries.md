@@ -30,7 +30,7 @@ WITH prescription.MEDICINE_NAME AS medicine, count(prescription.MEDICINE_NAME) A
 RETURN medicine, prescription_count
 ORDER BY prescription_count DESC;
 
-> Tempo de execução: 51 ms
+> Tempo de execução: 61 ms
 
 5. Consultar as contas de um paciente
 
@@ -44,7 +44,7 @@ Onde está o id_patient, substituir por um número inteiro de forma a obter as c
 
 Onde está o id_patient, substituir por um número inteiro de forma a obter os episódios de um paciente.
 
-> MATCH (p:Patient {IDPATIENT: 1})<-[:WAS_FREQUENTED_BY]-(e:Episode) RETURN p, e;
+> MATCH (p:Patient {IDPATIENT: $id_patient})<-[:WAS_FREQUENTED_BY]-(e:Episode) RETURN p, e;
 
 > Tempo de execução: 30 ms
 
@@ -93,7 +93,7 @@ RETURN p
 
 Onde está o id_nurse, substituir por um número inteiro de forma a obter os quartos de hospital onde um enfermeiro operou.
 
-> MATCH (n:Staff {ROLE: "Nurse", EMP_ID: 20})<-[:PERFORMED_BY]-(e:Episode) RETURN DISTINCT e.IDEPISODE, e.ROOM_TYPE, e.ROOM_COST;
+> MATCH (n:Staff {ROLE: "Nurse", EMP_ID: $id_nurse})<-[:PERFORMED_BY]-(e:Episode) RETURN DISTINCT e.IDEPISODE, e.ROOM_TYPE, e.ROOM_COST;
 
 > Tempo de execução: 10 ms
 
@@ -112,6 +112,6 @@ SET p.EMERGENCY_CONTACTS = CASE
             [{"CONTACT_NAME": $contact_name, "CONTACT_PHONE": $phone, "RELATION": $relation}])
 END
 
-> Tempo de execução: 73 ms
+> Tempo de execução: 83 ms
 
 Os tempos de execução das queries foram obtidos ao adicionar a palavra 'PROFILE' antes da query Cypher em si, permitindo visualizar o número de acessos à base de dados e tempo de execução.
