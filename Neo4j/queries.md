@@ -51,22 +51,24 @@ Onde está o id_patient, substituir por um número inteiro de forma a obter os e
 7. Registar um novo episódio - consulta
 
 Onde está o new_episode_id, substituir por um número inteiro de modo a criar um novo episódio. \
-Onde está o id_patient, substituir por um número inteiro. \
-Onde está o scheduled_on, appointment_date, appointment_time e doctor_id, substituir por strings de modo a inserir os detalhes de uma consulta.
+Onde está o id_patient e id_doctor, substituir por um número inteiro. \
+Onde está o scheduled_on e appointment_datetime, substituir por strings de modo a inserir os detalhes de uma consulta.
 
-> CREATE (e:Episode {IDEPISODE: new_episode_id})
-WITH e
-MATCH (p:Patient {IDPATIENT: id_patient})
+> MATCH (p:Patient {IDPATIENT: $id_patient})
+MATCH (d:Staff {EMP_ID: $id_doctor, ROLE: 'Doctor'})
+CREATE (e:Episode {
+    IDEPISODE: $new_episode_id,
+    SCHEDULED_ON: $scheduled_on,
+    APPOINTMENT_DATETIME: $appointment_datetime,
+    PRESCRIPTIONS: '[]',
+    BILL: '{}'
+})
 CREATE (e)-[:WAS_FREQUENTED_BY]->(p)
-WITH e, p
-CREATE (a:Appointment {SCHEDULED_ON: scheduled_on, APPOINTMENT_DATE: appointment_date, APPOINTMENT_TIME: appointment_time})
-CREATE (a)-[:IS_IN_EPISODE]->(e)
-WITH e, p, a
-MATCH (n:Staff {EMP_ID: doctor_id})
-CREATE (a)-[:PERFORMED_BY]->(n)
-RETURN p, e, a
+CREATE (e)-[:PERFORMED_BY {TYPE: 'appointment'}]->(d)
 
-> Tempo de execução: 172 ms
+RETURN e, d, p
+
+> Tempo de execução: 52 ms
 
 8. Registar um novo paciente
 
@@ -100,10 +102,16 @@ Onde está o id_nurse, substituir por um número inteiro de forma a obter os qua
 Onde está o id_patient, substituir por um número inteiro de forma a atualizar o contacto de emergência do paciente. \
 Onde está o contact_name, phone e relation, substituir por strings de modo a atualizar os campos do contacto de emergência.
 
-> MATCH (p:Patient {IDPATIENT: id_patient})<-[:IS_CONTACT]-(e:EmergencyContact)
-SET e.CONTACT_NAME = contact_name, e.PHONE = phone, e.RELATION = relation
-RETURN p, e
+> MATCH (p:Patient {IDPATIENT: $id_patient})
 
-> Tempo de execução: 83 ms
+SET p.EMERGENCY_CONTACTS = CASE
+    WHEN p.EMERGENCY_CONTACTS IS NULL OR p.EMERGENCY_CONTACTS = '' THEN 
+        '[{"CONTACT_NAME": $contact_name, "CONTACT_PHONE": $phone, "RELATION": $relation}]'
+    ELSE 
+        apoc.convert.toJson(apoc.convert.fromJsonList(p.EMERGENCY_CONTACTS) + 
+            [{"CONTACT_NAME": $contact_name, "CONTACT_PHONE": $phone, "RELATION": $relation}])
+END
+
+> Tempo de execução: 73 ms
 
 Os tempos de execução das queries foram obtidos ao adicionar a palavra 'PROFILE' antes da query Cypher em si, permitindo visualizar o número de acessos à base de dados e tempo de execução.
